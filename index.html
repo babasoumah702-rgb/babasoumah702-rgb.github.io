@@ -84,8 +84,9 @@
   .modal-head .sub{font-size:12px;color:var(--sub);margin-top:4px}
   .modal-close{background:none;border:none;color:var(--faint);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:8px}
   .modal-close:hover{color:var(--ink);background:var(--panel-2)}
-  .modal-body{font-size:13.5px;color:var(--ink);line-height:1.85;display:flex;flex-direction:column;gap:12px}
-  .modal-body p{margin:0}
+  .modal-body{font-size:13.5px;color:var(--ink);line-height:1.85;display:flex;flex-direction:column}
+  .modal-body p{margin:0 0 3.4em 0}
+  .modal-body p:last-child{margin-bottom:0}
   .modal-sign{margin-top:6px;text-align:right;font-size:12.5px;color:var(--sub)}
   .modal-foot{margin-top:18px;display:flex;justify-content:flex-end;gap:10px}
 </style>
@@ -174,7 +175,7 @@
     <div class="modal-head">
       <div>
         <h2 id="thanksTitle">致谢 · 刘昊老师</h2>
-        <div class="sub">微电子工艺实验课程</div>
+        <div class="sub">芯片制造技术</div>
       </div>
       <button class="modal-close" id="thanksClose" aria-label="关闭">×</button>
     </div>
@@ -182,10 +183,10 @@
       <p>这门课让我对芯片制造有了比较基础的理解。作为经管院的学生，平时学的东西都比较宏观；虽然我平时关注的范围比较广，尤其是近些年芯片相关的热点话题，但这个概念对我来说一直还是比较抽象。通过这半学期几次的学习，我对芯片才有了更深刻的理解。</p>
       <p>同时，非常感谢老师一直这么温柔耐心，由衷地感谢。也谢谢老师送的书，我会好好研读。</p>
       <p>虽然这门课对现在的我来说，可能暂时没有特别大的直接意义，但我总觉得，自己这一年受到的教育是有滞后性的——它往往会在未来的某一年、某个时刻，突然给我一些灵感和启示。我相信这门课也会在我人生中的某一个时间点，给我很大的帮助。</p>
-      <div class="modal-sign">学生：李陶睿越　学号：2024522045</div>
+      <div class="modal-sign">学生：李陶睿越</div>
     </div>
     <div class="modal-foot">
-      <button class="btn primary" id="thanksOk">收下这份感谢</button>
+      <button class="btn primary" id="thanksOk">好的</button>
     </div>
   </div>
 </div>
@@ -414,7 +415,7 @@ function playAnneal(){
   const btn=$('btnPlayAnneal'); btn.textContent='退火进行中…';
   const t0=performance.now(), dur=1600;
   const tick=(now)=>{ const k=Math.min(1,(now-t0)/dur); state.anim.progress=k; drawChart(); drawCloud();
-    if(k<1){ state.anim.raf=requestAnimationFrame(tick); } else { state.anim.playing=false; btn.textContent='播放退火过程'; } };
+    if(k<1){ state.anim.raf=requestAnimation frame(tick); } else { state.anim.playing=false; btn.textContent='播放退火过程'; } };
   state.anim.raf=requestAnimationFrame(tick);
 }
 function refresh(){ drawCloud(); drawChart(); updateStats(); }
@@ -447,7 +448,7 @@ $('btnExport').onclick=()=>{
   const cloud=$('cloud'); c.drawImage(cloud,36,96,W-72,220);
   const chart=$('chart'); c.drawImage(chart,36,340,W-72,340);
   c.fillStyle='#567083'; c.font='12px sans-serif';
-  c.fillText('作者：李陶睿越　学号：2024522045', 36, 720);
+  c.fillText('作者：李陶睿越', 36, 720);
   const a=document.createElement('a');
   a.download='离子注入退火智能体.png';
   a.href=off.toDataURL('image/png'); a.click();
