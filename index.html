@@ -75,7 +75,6 @@
   .note{margin-top:4px;font-size:12px;color:var(--faint);border-top:1px dashed var(--line);padding-top:12px;line-height:1.6}
   .note b{color:var(--sub)}
 
-  /* 致谢弹窗 */
   .modal-mask{position:fixed;inset:0;background:rgba(6,10,15,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:22px;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
   .modal-mask.show{opacity:1;pointer-events:auto}
   .modal{width:100%;max-width:560px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 26px 22px;box-shadow:0 24px 60px rgba(0,0,0,.5);transform:translateY(10px);transition:transform .25s}
@@ -170,7 +169,6 @@
   </div>
 </div>
 
-<!-- 致谢弹窗 -->
 <div class="modal-mask" id="thanksModal" role="dialog" aria-modal="true" aria-labelledby="thanksTitle">
   <div class="modal">
     <div class="modal-head">
@@ -199,18 +197,13 @@ const IONS = {
   As: {label:'砷 As', rp100:0.12, sigRatio:0.28},
   Sb: {label:'锑 Sb', rp100:0.10, sigRatio:0.27}
 };
-
 const $ = id => document.getElementById(id);
 const XMAX = 2.5;
-
 const state = {
   steps: [ {ion:'B', E:100, doseExp:14, theta:0} ],
-  annealOn: true,
-  T: 1000, t: 30,
-  scale: 'linear',
+  annealOn: true, T: 1000, t: 30, scale: 'linear',
   anim: {playing:false, progress:1, raf:null}
 };
-
 function stepCalc(s){
   const ion = IONS[s.ion];
   const Rp  = ion.rp100 * Math.pow(s.E/100, 0.55);
@@ -224,10 +217,7 @@ function gauss(x, mean, sigUm, Q){
   return Q/(Math.sqrt(2*Math.PI)*sigCm) * Math.exp(-Math.pow(x-mean,2)/(2*sigUm*sigUm));
 }
 function injectAt(x){
-  return state.steps.reduce((sum,s)=>{
-    const c=stepCalc(s);
-    return sum + gauss(x, c.RpV, c.sig0, c.Q);
-  },0);
+  return state.steps.reduce((sum,s)=>{ const c=stepCalc(s); return sum + gauss(x, c.RpV, c.sig0, c.Q); },0);
 }
 function spreadLength(){
   const t = Math.max(state.t, 0.001);
@@ -249,31 +239,22 @@ function profile(fn, n=200){
 }
 const BG=1e8;
 function cloudAt(y,k){ return BG + (state.annealOn?annealAt(y,k):injectAt(y)); }
-function peakOf(arr){
-  let m=arr[0], mx=arr[0].y;
-  arr.forEach(p=>{ if(p.y>mx){mx=p.y;m=p;} });
-  return m;
-}
-
+function peakOf(arr){ let m=arr[0], mx=arr[0].y; arr.forEach(p=>{ if(p.y>mx){mx=p.y;m=p;} }); return m; }
 function fmtConc(v){
   if(!isFinite(v)||v<=0) return '—';
-  const e=Math.floor(Math.log10(v));
-  const a=v/Math.pow(10,e);
+  const e=Math.floor(Math.log10(v)); const a=v/Math.pow(10,e);
   const sup={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
-  const es=String(e).split('').map(c=>sup[c]).join('');
-  return a.toFixed(2)+'×10'+es;
+  return a.toFixed(2)+'×10'+String(e).split('').map(c=>sup[c]).join('');
 }
 function fmtOrder(v){
   const e=Math.floor(Math.log10(v));
   const sup={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
   return '10'+String(e).split('').map(c=>sup[c]).join('');
 }
-
 function rainbow(t){
   const stops=[[26,42,108],[43,108,176],[43,179,163],[122,199,79],[246,215,67],[239,138,60],[217,54,54]];
   t=Math.max(0,Math.min(1,t));
-  const seg=t*(stops.length-1);
-  const i=Math.min(stops.length-2,Math.floor(seg));
+  const seg=t*(stops.length-1); const i=Math.min(stops.length-2,Math.floor(seg));
   const f=seg-i, a=stops[i], b=stops[i+1];
   return [0,1,2].map(k=>Math.round(a[k]+(b[k]-a[k])*f));
 }
@@ -281,55 +262,36 @@ function drawCloud(){
   const cv=$('cloud'), dpr=window.devicePixelRatio||1;
   const W=cv.clientWidth, H=cv.clientHeight;
   cv.width=W*dpr; cv.height=H*dpr;
-  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
-  ctx.clearRect(0,0,W,H);
-
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
   const k=state.anim.progress;
   const plotL=46, plotR=W-74, plotT=14, plotB=H-30;
-  const plotW=plotR-plotL, plotH=plotB-plotT;
-  const xMaxH=1.6;
-
+  const plotW=plotR-plotL, plotH=plotB-plotT; const xMaxH=1.6;
   let peak=BG;
   for(let j=0;j<80;j++){ const c=cloudAt(XMAX*j/79,k); if(c>peak)peak=c; }
   const logBG=Math.log10(BG), logPeak=Math.log10(peak);
-
   const cols=120, rows=80;
   const off=document.createElement('canvas'); off.width=cols; off.height=rows;
-  const octx=off.getContext('2d');
-  const img=octx.createImageData(cols,rows);
+  const octx=off.getContext('2d'); const img=octx.createImageData(cols,rows);
   for(let j=0;j<rows;j++){
     const y=XMAX*j/(rows-1), c=cloudAt(y,k);
     const t=(Math.log10(c)-logBG)/(logPeak-logBG);
     const [r,g,b]=rainbow(t);
-    for(let i=0;i<cols;i++){
-      const idx=(j*cols+i)*4;
-      img.data[idx]=r;img.data[idx+1]=g;img.data[idx+2]=b;img.data[idx+3]=255;
-    }
+    for(let i=0;i<cols;i++){ const idx=(j*cols+i)*4; img.data[idx]=r;img.data[idx+1]=g;img.data[idx+2]=b;img.data[idx+3]=255; }
   }
   octx.putImageData(img,0,0);
   ctx.imageSmoothingEnabled=true;
   ctx.drawImage(off,plotL,plotT,plotW,plotH);
-
-  ctx.strokeStyle='#16222e'; ctx.lineWidth=1;
-  ctx.strokeRect(plotL,plotT,plotW,plotH);
+  ctx.strokeStyle='#16222e'; ctx.lineWidth=1; ctx.strokeRect(plotL,plotT,plotW,plotH);
   for(let g=0;g<=XMAX;g+=0.5){
     const yy=plotT+plotH*g/XMAX;
     ctx.strokeStyle='rgba(22,34,46,.55)';
     ctx.beginPath(); ctx.moveTo(plotL,yy); ctx.lineTo(plotR,yy); ctx.stroke();
   }
-  ctx.fillStyle='#567083'; ctx.font='11px sans-serif';
-  ctx.textAlign='right';
-  for(let g=0;g<=XMAX;g+=0.5){
-    const yy=plotT+plotH*g/XMAX;
-    ctx.fillText(g.toFixed(1), plotL-6, yy+4);
-  }
+  ctx.fillStyle='#567083'; ctx.font='11px sans-serif'; ctx.textAlign='right';
+  for(let g=0;g<=XMAX;g+=0.5){ const yy=plotT+plotH*g/XMAX; ctx.fillText(g.toFixed(1), plotL-6, yy+4); }
   ctx.textAlign='center';
-  for(let g=0;g<=xMaxH+1e-6;g+=0.4){
-    const xx=plotL+plotW*g/xMaxH;
-    ctx.fillText(g.toFixed(1), xx, plotB+16);
-  }
+  for(let g=0;g<=xMaxH+1e-6;g+=0.4){ const xx=plotL+plotW*g/xMaxH; ctx.fillText(g.toFixed(1), xx, plotB+16); }
   ctx.fillText('Horizontal (μm)', plotL+plotW/2, H-6);
-
   const cbX=plotR+10, cbW=12;
   for(let p=0;p<rows;p++){
     const [r,g,b]=rainbow(1-p/(rows-1));
@@ -340,7 +302,6 @@ function drawCloud(){
   ctx.fillText(fmtOrder(peak), cbX+cbW+5, plotT+8);
   ctx.fillText('1E8', cbX+cbW+5, plotB);
 }
-
 function setupChartAxes(ctx,W,H,padL,padR,padT,padB){
   ctx.strokeStyle='#16222e'; ctx.lineWidth=1;
   for(let g=0;g<=XMAX;g+=0.5){
@@ -355,9 +316,7 @@ function drawChart(){
   const cv=$('chart'), dpr=window.devicePixelRatio||1;
   const W=cv.clientWidth, H=cv.clientHeight;
   cv.width=W*dpr; cv.height=H*dpr;
-  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
-  ctx.clearRect(0,0,W,H);
-
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
   const padL=70, padR=20, padT=20, padB=44;
   const k=state.anim.progress;
   const inj=profile(injectAt);
@@ -365,38 +324,26 @@ function drawChart(){
   const peaks=[...inj,...ann].map(p=>p.y).filter(v=>v>0);
   const yMax=peaks.length?Math.max(...peaks)*1.15:1e19;
   const yMin=state.scale==='log'?1e8:0;
-
   const X=x=>padL+(x/XMAX)*(W-padL-padR);
   const Y=y=>{
-    if(state.scale==='log'){
-      const a=Math.log10(yMin), b=Math.log10(yMax);
-      const t=(Math.log10(Math.max(y,yMin))-a)/(b-a);
-      return padT+(1-t)*(H-padT-padB);
-    }
+    if(state.scale==='log'){ const a=Math.log10(yMin), b=Math.log10(yMax); const t=(Math.log10(Math.max(y,yMin))-a)/(b-a); return padT+(1-t)*(H-padT-padB); }
     return padT+(1-y/yMax)*(H-padT-padB);
   };
   setupChartAxes(ctx,W,H,padL,padR,padT,padB);
-
   ctx.textAlign='right';
   if(state.scale==='log'){
     for(let e=8;e<=19;e++){ const y=Math.pow(10,e); if(y>=yMin&&y<=yMax) ctx.fillText('1e'+e,X(padL-8),Y(y)+4); }
   }else{
     for(let g=0;g<=1.001;g+=0.2){ const y=yMax*g; ctx.fillText(fmtConc(y),X(padL-8),Y(y)+4); }
   }
-
   function series(arr,color,glow){
-    ctx.strokeStyle=color; ctx.lineWidth=2.2;
-    ctx.shadowColor=glow; ctx.shadowBlur=10;
+    ctx.strokeStyle=color; ctx.lineWidth=2.2; ctx.shadowColor=glow; ctx.shadowBlur=10;
     ctx.beginPath();
-    arr.forEach((p,i)=>{
-      const y=state.scale==='log'?Math.max(p.y,yMin):p.y;
-      i===0?ctx.moveTo(X(p.x),Y(y)):ctx.lineTo(X(p.x),Y(y));
-    });
+    arr.forEach((p,i)=>{ const y=state.scale==='log'?Math.max(p.y,yMin):p.y; i===0?ctx.moveTo(X(p.x),Y(y)):ctx.lineTo(X(p.x),Y(y)); });
     ctx.stroke(); ctx.shadowBlur=0;
   }
   series(inj,'#38bdf8','rgba(56,189,248,.5)');
   if(state.annealOn) series(ann,'#f5b544','rgba(245,181,68,.45)');
-
   const pk=peakOf(inj);
   ctx.strokeStyle='rgba(56,189,248,.35)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(X(pk.x),padT); ctx.lineTo(X(pk.x),H-padB); ctx.stroke();
@@ -406,10 +353,8 @@ function drawChart(){
   ctx.beginPath(); ctx.arc(X(pk.x),Y(pk.y),4,0,Math.PI*2);
   ctx.fillStyle='#38bdf8'; ctx.fill();
 }
-
 function updateStats(){
-  const inj=profile(injectAt);
-  const pk=peakOf(inj);
+  const inj=profile(injectAt); const pk=peakOf(inj);
   $('stRp').textContent=pk.x.toFixed(3)+' μm';
   $('stPeakI').textContent=fmtConc(pk.y)+' cm⁻³';
   const annPeak=state.annealOn?peakOf(profile(x=>annealAt(x,1))).y:null;
@@ -417,15 +362,8 @@ function updateStats(){
   const c=stepCalc(state.steps[0]);
   $('stSig').textContent=c.sig0.toFixed(3)+' μm';
 }
-
-function mkRange(min,max,step,val){
-  const i=document.createElement('input'); i.type='range';
-  i.min=min; i.max=max; i.step=step; i.value=val; return i;
-}
-function mkNum(min,max,step,val){
-  const n=document.createElement('input'); n.type='number'; n.className='num';
-  n.min=min; n.max=max; n.step=step; n.value=val; return n;
-}
+function mkRange(min,max,step,val){ const i=document.createElement('input'); i.type='range'; i.min=min; i.max=max; i.step=step; i.value=val; return i; }
+function mkNum(min,max,step,val){ const n=document.createElement('input'); n.type='number'; n.className='num'; n.min=min; n.max=max; n.step=step; n.value=val; return n; }
 function bindPair(rg,num,min,max,set){
   const clamp=v=>{ let x=Number(v); if(!isFinite(x))x=min; return Math.min(max,Math.max(min,x)); };
   rg.oninput=()=>{ set(clamp(rg.value)); num.value=rg.value; refresh(); };
@@ -436,9 +374,7 @@ function fieldRow(label, unit, control){
   const l=document.createElement('label');
   const sp=document.createElement('span'); sp.textContent=label;
   const u=document.createElement('span'); u.className='unit'; u.textContent=unit;
-  l.appendChild(sp); l.appendChild(u);
-  d.appendChild(l); d.appendChild(control);
-  return d;
+  l.appendChild(sp); l.appendChild(u); d.appendChild(l); d.appendChild(control); return d;
 }
 function renderSteps(){
   const list=$('stepList'); list.innerHTML='';
@@ -453,66 +389,44 @@ function renderSteps(){
       top.appendChild(del);
     }
     box.appendChild(top);
-
     const ion=document.createElement('select');
     Object.keys(IONS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=IONS[k].label; ion.appendChild(o); });
     ion.value=s.ion; ion.onchange=()=>{ s.ion=ion.value; refresh(); };
     box.appendChild(fieldRow('注入杂质','', ion));
-
     const eRg=mkRange(10,1000,10,s.E), eNum=mkNum(10,1000,10,s.E);
     bindPair(eRg,eNum,10,1000,v=>s.E=v);
     const eRow=document.createElement('div'); eRow.className='row'; eRow.appendChild(eRg); eRow.appendChild(eNum);
     box.appendChild(fieldRow('注入能量','keV', eRow));
-
     const dRg=mkRange(12,16,1,s.doseExp), dNum=mkNum(12,16,1,s.doseExp);
     bindPair(dRg,dNum,12,16,v=>s.doseExp=v);
     const dRow=document.createElement('div'); dRow.className='row'; dRow.appendChild(dRg); dRow.appendChild(dNum);
     box.appendChild(fieldRow('注入剂量（指数）','cm⁻² ×10^n', dRow));
-
     const aRg=mkRange(-90,90,5,s.theta), aNum=mkNum(-90,90,5,s.theta);
     bindPair(aRg,aNum,-90,90,v=>s.theta=v);
     const aRow=document.createElement('div'); aRow.className='row'; aRow.appendChild(aRg); aRow.appendChild(aNum);
     box.appendChild(fieldRow('注入角度','°', aRow));
-
     list.appendChild(box);
   });
 }
-
 function playAnneal(){
   if(state.anim.playing) return;
   state.anim.playing=true; state.anim.progress=0;
   const btn=$('btnPlayAnneal'); btn.textContent='退火进行中…';
   const t0=performance.now(), dur=1600;
-  const tick=(now)=>{
-    const k=Math.min(1,(now-t0)/dur);
-    state.anim.progress=k;
-    drawChart(); drawCloud();
-    if(k<1){ state.anim.raf=requestAnimationFrame(tick); }
-    else { state.anim.playing=false; btn.textContent='播放退火过程'; }
-  };
+  const tick=(now)=>{ const k=Math.min(1,(now-t0)/dur); state.anim.progress=k; drawChart(); drawCloud();
+    if(k<1){ state.anim.raf=requestAnimationFrame(tick); } else { state.anim.playing=false; btn.textContent='播放退火过程'; } };
   state.anim.raf=requestAnimationFrame(tick);
 }
-
 function refresh(){ drawCloud(); drawChart(); updateStats(); }
-
-$('btnAddStep').onclick=()=>{
-  state.steps.push({ion:'P', E:80, doseExp:13, theta:0});
-  renderSteps(); refresh();
-};
+$('btnAddStep').onclick=()=>{ state.steps.push({ion:'P', E:80, doseExp:13, theta:0}); renderSteps(); refresh(); };
 $('annealOn').onchange=e=>{ state.annealOn=e.target.checked; refresh(); };
 const tempRg=$('temp'), tempNum=$('tempNum');
 tempRg.oninput=()=>{ state.T=Number(tempRg.value); tempNum.value=tempRg.value; refresh(); };
 tempNum.oninput=()=>{ let v=Number(tempNum.value); if(!isFinite(v))v=700; v=Math.min(1300,Math.max(700,v)); state.T=v; tempRg.value=v; refresh(); };
 $('time').oninput=e=>{ state.t=Number(e.target.value)||0; refresh(); };
-$('scaleSeg').addEventListener('click',e=>{
-  const b=e.target.closest('button'); if(!b) return;
-  state.scale=b.dataset.s;
-  [...$('scaleSeg').children].forEach(x=>x.classList.toggle('on',x===b));
-  drawChart();
-});
+$('scaleSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; state.scale=b.dataset.s; [...$('scaleSeg').children].forEach(x=>x.classList.toggle('on',x===b)); drawChart(); });
 $('btnPlayAnneal').onclick=playAnneal;
 window.addEventListener('resize',refresh);
-
 const thanksModal=$('thanksModal');
 function openThanks(){ thanksModal.classList.add('show'); }
 function closeThanks(){ thanksModal.classList.remove('show'); }
@@ -522,7 +436,6 @@ $('thanksOk').onclick=closeThanks;
 thanksModal.addEventListener('click',e=>{ if(e.target===thanksModal) closeThanks(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeThanks(); });
 setTimeout(openThanks,300);
-
 $('btnExport').onclick=()=>{
   const W=1000, H=760;
   const off=document.createElement('canvas'); off.width=W; off.height=H;
@@ -539,7 +452,6 @@ $('btnExport').onclick=()=>{
   a.download='离子注入退火智能体.png';
   a.href=off.toDataURL('image/png'); a.click();
 };
-
 renderSteps();
 refresh();
 </script>
