@@ -74,6 +74,21 @@
   .stat .v{font-size:15px;font-weight:700;margin-top:5px}
   .note{margin-top:4px;font-size:12px;color:var(--faint);border-top:1px dashed var(--line);padding-top:12px;line-height:1.6}
   .note b{color:var(--sub)}
+
+  /* 致谢弹窗 */
+  .modal-mask{position:fixed;inset:0;background:rgba(6,10,15,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:22px;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+  .modal-mask.show{opacity:1;pointer-events:auto}
+  .modal{width:100%;max-width:560px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 26px 22px;box-shadow:0 24px 60px rgba(0,0,0,.5);transform:translateY(10px);transition:transform .25s}
+  .modal-mask.show .modal{transform:translateY(0)}
+  .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+  .modal-head h2{font-size:17px;font-weight:700;letter-spacing:.3px}
+  .modal-head .sub{font-size:12px;color:var(--sub);margin-top:4px}
+  .modal-close{background:none;border:none;color:var(--faint);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:8px}
+  .modal-close:hover{color:var(--ink);background:var(--panel-2)}
+  .modal-body{font-size:13.5px;color:var(--ink);line-height:1.85;display:flex;flex-direction:column;gap:12px}
+  .modal-body p{margin:0}
+  .modal-sign{margin-top:6px;text-align:right;font-size:12.5px;color:var(--sub)}
+  .modal-foot{margin-top:18px;display:flex;justify-content:flex-end;gap:10px}
 </style>
 </head>
 <body>
@@ -84,6 +99,7 @@
       <p>选择注入杂质、剂量、能量、角度与退火条件，查看注入后及退火后的二维云图与一维浓度深度分布（课程方案 B 示例：离子注入工艺）</p>
     </div>
     <div class="actions">
+      <button class="btn" id="btnThanks">致谢老师</button>
       <button class="btn" id="btnExport">导出截图 PNG</button>
     </div>
   </header>
@@ -151,6 +167,28 @@
         <b>模型说明：</b>本智能体为课程教学演示，注入分布采用高斯近似，峰值深度与投影射程随注入能量、离子种类变化；退火按扩散展宽（等效扩散长度随温度、时间增大）做简化再分布，总量守恒。结果用于理解工艺参数对掺杂分布的趋势性影响，不等同于课堂 HSLab / AIICETI 设备的器件级仿真结果。
       </p>
     </main>
+  </div>
+</div>
+
+<!-- 致谢弹窗 -->
+<div class="modal-mask" id="thanksModal" role="dialog" aria-modal="true" aria-labelledby="thanksTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="thanksTitle">致谢 · 刘昊老师</h2>
+        <div class="sub">微电子工艺实验课程</div>
+      </div>
+      <button class="modal-close" id="thanksClose" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body">
+      <p>这门课让我对芯片制造有了比较基础的理解。作为经管院的学生，平时学的东西都比较宏观；虽然我平时关注的范围比较广，尤其是近些年芯片相关的热点话题，但这个概念对我来说一直还是比较抽象。通过这半学期几次的学习，我对芯片才有了更深刻的理解。</p>
+      <p>同时，非常感谢老师一直这么温柔耐心，由衷地感谢。也谢谢老师送的书，我会好好研读。</p>
+      <p>虽然这门课对现在的我来说，可能暂时没有特别大的直接意义，但我总觉得，自己这一年受到的教育是有滞后性的——它往往会在未来的某一年、某个时刻，突然给我一些灵感和启示。我相信这门课也会在我人生中的某一个时间点，给我很大的帮助。</p>
+      <div class="modal-sign">学生：李陶睿越　学号：2024522045</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn primary" id="thanksOk">收下这份感谢</button>
+    </div>
   </div>
 </div>
 
@@ -474,6 +512,16 @@ $('scaleSeg').addEventListener('click',e=>{
 });
 $('btnPlayAnneal').onclick=playAnneal;
 window.addEventListener('resize',refresh);
+
+const thanksModal=$('thanksModal');
+function openThanks(){ thanksModal.classList.add('show'); }
+function closeThanks(){ thanksModal.classList.remove('show'); }
+$('btnThanks').onclick=openThanks;
+$('thanksClose').onclick=closeThanks;
+$('thanksOk').onclick=closeThanks;
+thanksModal.addEventListener('click',e=>{ if(e.target===thanksModal) closeThanks(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeThanks(); });
+setTimeout(openThanks,300);
 
 $('btnExport').onclick=()=>{
   const W=1000, H=760;
