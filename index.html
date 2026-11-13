@@ -414,9 +414,9 @@ function playAnneal(){
   state.anim.playing=true; state.anim.progress=0;
   const btn=$('btnPlayAnneal'); btn.textContent='退火进行中…';
   const t0=performance.now(), dur=1600;
-  const tick=(now)=>{ const k=Math.min(1,(now-t0)/dur); state.anim.progress=k; drawChart(); drawCloud();
-    if(k<1){ state.anim.raf=requestAnimationFrame(tick); } else { state.anim.playing=false; btn.textContent='播放退火过程'; } };
-  state.anim.raf=requestAnimation frame(tick);
+  const tick=()=>{ const k=Math.min(1,(performance.now()-t0)/dur); state.anim.progress=k; drawChart(); drawCloud();
+    if(k<1){ state.anim.raf=setTimeout(tick,16); } else { state.anim.playing=false; btn.textContent='播放退火过程'; } };
+  state.anim.raf=setTimeout(tick,16);
 }
 function refresh(){ drawCloud(); drawChart(); updateStats(); }
 $('btnAddStep').onclick=()=>{ state.steps.push({ion:'P', E:80, doseExp:13, theta:0}); renderSteps(); refresh(); };
